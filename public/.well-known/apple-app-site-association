@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "JV53U4D9H9.app.estimateapp.estimator",
+        "paths": ["/reset/*"]
+      }
+    ]
+  }
+}

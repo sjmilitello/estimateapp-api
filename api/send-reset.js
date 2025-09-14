@@ -1,7 +1,7 @@
 // api/send-reset.js
 import { NextResponse } from "next/server";
 
-const FROM_EMAIL = process.env.POSTMARK_FROM;            // e.g. support@estimateapp.app
+const FROM_EMAIL = process.env.POSTMARK_FROM;            // e.g. no-reply@estimateapp.app
 const POSTMARK_TOKEN = process.env.POSTMARK_SERVER_TOKEN;
 const BASE_URL = process.env.PUBLIC_APP_BASE_URL;        // e.g. https://estimateapp.app
 

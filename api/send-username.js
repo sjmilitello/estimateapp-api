@@ -1,60 +1,43 @@
-
 // api/send-username.js
 import { NextResponse } from "next/server";
+import fetch from "node-fetch";
 
-const FROM_EMAIL = process.env.POSTMARK_FROM;           // e.g. support@estimateapp.app
-const POSTMARK_TOKEN = process.env.POSTMARK_SERVER_TOKEN;
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
-function ok() {
-  return NextResponse.json({ success: true }, { status: 200 });
-}
-function bad(message, code = 400) {
-  return NextResponse.json({ success: false, error: message }, { status: code });
-}
-
-export async function POST(request) {
   try {
-    const { toEmail, username } = await request.json();
+    const { to, username } = req.body;
 
-    if (!POSTMARK_TOKEN) return bad("Server misconfigured: POSTMARK_SERVER_TOKEN missing", 500);
-    if (!FROM_EMAIL)     return bad("Server misconfigured: POSTMARK_FROM missing", 500);
-
-    // Basic validation
-    if (!toEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(toEmail)) {
-      return bad("Invalid toEmail");
-    }
-    if (!username || typeof username !== "string" || !username.trim()) {
-      return bad("Invalid username");
+    if (!to || !username) {
+      return res.status(400).json({ error: "Missing fields" });
     }
 
-    // Send via Postmark
-    const resp = await fetch("https://api.postmarkapp.com/email", {
+    const response = await fetch("https://api.postmarkapp.com/email", {
       method: "POST",
       headers: {
-        "X-Postmark-Server-Token": POSTMARK_TOKEN,
+        "Accept": "application/json",
         "Content-Type": "application/json",
+        "X-Postmark-Server-Token": process.env.POSTMARK_API_TOKEN
       },
       body: JSON.stringify({
-        From: FROM_EMAIL,
-        To: toEmail,
-        Subject: "Your EstiMate admin username",
-        TextBody:
-          `Here is your EstiMate admin username:\n\n` +
-          `Username: ${username}\n\n` +
-          `If you didn’t request this, you can ignore this email.`,
-        MessageStream: "outbound",
-      }),
+        From: "no-reply@estimateapp.app",   // must be a verified Postmark sender
+        To: to,
+        Subject: "Your EstiMate App Username",
+        TextBody: `Your username is: ${username}`
+      })
     });
 
-    if (!resp.ok) {
-      const e = await resp.text();
-      console.error("Postmark error:", e);
-      return bad("Email failed", 502);
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Postmark error:", error);
+      return res.status(500).json({ error: error });
     }
 
-    return ok();
+    return res.status(200).json({ ok: true });
   } catch (err) {
-    console.error("send-username error:", err);
-    return bad("Internal error", 500);
+    console.error("Server error:", err);
+    return res.status(500).json({ error: "Server error" });
   }
 }

@@ -1,48 +1,37 @@
 // api/send-username.js
+import fetch from "node-fetch";
+
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
-    return res.status(405).json({ ok: false, error: 'Method not allowed' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const { to, username } = req.body;
+  if (!to || !username) {
+    return res.status(400).json({ error: "Missing required fields" });
   }
 
   try {
-    const { to, username } = req.body || {};
-    if (!to || !username) {
-      return res.status(400).json({ ok: false, error: '`to` and `username` are required' });
-    }
-
-    const PM_TOKEN = process.env.POSTMARK_SERVER_TOKEN;
-    const FROM = process.env.FROM_EMAIL || 'no-reply@estimateapp.app';
-
-    const payload = {
-      From: FROM,
-      To: to,
-      Subject: 'Your EstiMate username',
-      TextBody: `Your username is: ${username}`,
-      MessageStream: 'outbound',
-    };
-
-    const r = await fetch('https://api.postmarkapp.com/email', {
-      method: 'POST',
+    const response = await fetch("https://api.postmarkapp.com/email", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Postmark-Server-Token': PM_TOKEN,
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "X-Postmark-Server-Token": "f008e990-c6de-46d0-ad52-3354522d97e1" // your Server API token
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        From: "no-reply@estimateapp.app",
+        To: to,
+        Subject: "Your EstiMate Username",
+        TextBody: `Hello,\n\nYour username for the EstiMate app is: ${username}\n\nIf you didn’t request this email, please ignore it.`
+      })
     });
 
-    const text = await r.text();
-    let pm;
-    try { pm = JSON.parse(text); } catch { pm = { raw: text }; }
+    const data = await response.json();
+    return res.status(response.ok ? 200 : 400).json(data);
 
-    // If Postmark says ErrorCode > 0, treat as failure
-    if (!r.ok || (pm && typeof pm.ErrorCode === 'number' && pm.ErrorCode > 0)) {
-      return res.status(502).json({ ok: false, pmStatus: r.status, pmData: pm });
-    }
-
-    return res.status(200).json({ ok: true, pmData: pm });
   } catch (err) {
-    return res.status(500).json({ ok: false, error: String(err) });
+    console.error(err);
+    return res.status(500).json({ error: "Failed to send username email" });
   }
 }

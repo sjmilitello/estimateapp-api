@@ -1,63 +1,39 @@
 // api/send-reset.js
-import { NextResponse } from "next/server";
+import fetch from "node-fetch";
 
-const FROM_EMAIL = process.env.POSTMARK_FROM;            // e.g. no-reply@estimateapp.app
-const POSTMARK_TOKEN = process.env.POSTMARK_SERVER_TOKEN;
-const BASE_URL = process.env.PUBLIC_APP_BASE_URL;        // e.g. https://estimateapp.app
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
-function ok() { return NextResponse.json({ success: true }, { status: 200 }); }
-function bad(message, code = 400) {
-  return NextResponse.json({ success: false, error: message }, { status: code });
-}
+  const { to, token } = req.body;
+  if (!to || !token) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
 
-export async function POST(request) {
+  const resetLink = `https://estimateapp.app/reset?token=${encodeURIComponent(token)}`;
+
   try {
-    const { toEmail, token } = await request.json();
-
-    if (!POSTMARK_TOKEN) return bad("Server misconfigured: POSTMARK_SERVER_TOKEN missing", 500);
-    if (!FROM_EMAIL)     return bad("Server misconfigured: POSTMARK_FROM missing", 500);
-    if (!BASE_URL)       return bad("Server misconfigured: PUBLIC_APP_BASE_URL missing", 500);
-
-    if (!toEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(toEmail)) {
-      return bad("Invalid toEmail");
-    }
-    if (!token || typeof token !== "string" || !token.trim()) {
-      return bad("Invalid token");
-    }
-
-    const resetUrl = `${BASE_URL}/reset?token=${encodeURIComponent(token)}`;
-
-    const resp = await fetch("https://api.postmarkapp.com/email", {
+    const response = await fetch("https://api.postmarkapp.com/email", {
       method: "POST",
       headers: {
-        "X-Postmark-Server-Token": POSTMARK_TOKEN,
-        "Content-Type": "application/json"
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "X-Postmark-Server-Token": "f008e990-c6de-46d0-ad52-3354522d97e1" // your Server API token
       },
       body: JSON.stringify({
-        From: FROM_EMAIL,
-        To: toEmail,
-        Subject: "Reset your EstiMate admin password",
-        TextBody:
-          `Tap this link to reset your EstiMate admin password:\n\n` +
-          `${resetUrl}\n\n` +
-          `If you didn’t request this, you can ignore this email.`,
-        HtmlBody:
-          `<p>Tap this link to reset your EstiMate admin password:</p>` +
-          `<p><a href="${resetUrl}">${resetUrl}</a></p>` +
-          `<p>If you didn’t request this, you can ignore this email.</p>`,
-        MessageStream: "outbound"
+        From: "no-reply@estimateapp.app",
+        To: to,
+        Subject: "Reset your EstiMate password",
+        TextBody: `Hello,\n\nTo reset your EstiMate password, click the link below:\n\n${resetLink}\n\nThis link will expire in 1 hour.\n\nIf you didn’t request this, please ignore this email.`
       })
     });
 
-    if (!resp.ok) {
-      const e = await resp.text();
-      console.error("Postmark error:", e);
-      return bad("Email failed", 502);
-    }
+    const data = await response.json();
+    return res.status(response.ok ? 200 : 400).json(data);
 
-    return ok();
   } catch (err) {
-    console.error("send-reset error:", err);
-    return bad("Internal error", 500);
+    console.error(err);
+    return res.status(500).json({ error: "Failed to send reset email" });
   }
 }

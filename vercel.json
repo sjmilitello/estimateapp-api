@@ -8,4 +8,22 @@
       ]
     }
   ]
+{
+  "cleanUrls": true,
+  "headers": [
+    {
+      "source": "/(privacy|terms|support)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=300" }
+      ]
+    }
+  ]
+}
+{
+  "rewrites": [
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms",   "destination": "/terms.html" },
+    { "source": "/support", "destination": "/support.html" }
+    ]
+  }
 }

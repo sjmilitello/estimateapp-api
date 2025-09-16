@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EstiMate Privacy Policy</title>
+  <meta name="description" content="Privacy Policy for EstiMate app." />
+  <style>
+    :root {
+      --bg:#0b0c10;
+      --card:#111319;
+      --text:#e9eef5;
+      --muted:#a9b4c2;
+      --accent:#59c3ff;
+      --border:#1c2330;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 800px at 20% -10%, #142035 0, transparent 60%), var(--bg);
+    }
+    .wrap {
+      max-width: 860px;
+      margin: 48px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    h1, h2 {
+      line-height: 1.25;
+      margin: 0 0 12px;
+    }
+    h1 { font-size: 28px; letter-spacing: .2px; }
+    h2 { font-size: 20px; margin-top: 28px; }
+    p { margin: 10px 0; color: var(--text); }
+    .muted { color: var(--muted); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul { margin: 8px 0 8px 20px; }
+    .meta {
+      display: flex; gap: 16px; flex-wrap: wrap;
+      margin: 8px 0 22px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .footer {
+      margin-top: 16px; color: var(--muted); font-size: 14px;
+    }
+    .brand {
+      display: inline-block;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-weight: 600;
+      background: #0e1522;
+      margin-bottom: 14px;
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="brand">EstiMate</div>
+      <h1>Privacy Policy</h1>
+      <div class="meta">
+        <div><strong>Effective Date:</strong> <span class="muted">[Month Day, Year]</span></div>
+        <div><strong>Last Updated:</strong> <span class="muted">[Month Day, Year]</span></div>
+      </div>
+
+      <p>
+        EstiMate (“the App”) helps contractors and homeowners generate tile installation estimates.
+        We value your privacy and are committed to protecting your information.
+      </p>
+
+      <h2>Information We Collect</h2>
+      <ul>
+        <li><strong>Admin Account (optional):</strong> If you set up an Admin account, we store your username, password, and recovery email. Passwords are securely stored using Apple Keychain.</li>
+        <li><strong>Estimate Data:</strong> Rooms, measurements, and project details you enter are stored locally on your device.</li>
+        <li><strong>Recovery Email:</strong> Used only to send username reminders and password reset emails via our provider (Postmark).</li>
+      </ul>
+      <p class="muted">We do not collect analytics, advertising identifiers, or location data.</p>
+
+      <h2>How We Use Your Information</h2>
+      <ul>
+        <li>Provide secure Admin access (including Face ID/Touch ID where available).</li>
+        <li>Send password reset links and username reminders to your recovery email.</li>
+        <li>Generate and save estimates for your use.</li>
+      </ul>
+
+      <h2>Data Storage</h2>
+      <ul>
+        <li><strong>On-device:</strong> Estimates are saved locally on your device.</li>
+        <li><strong>Credentials:</strong> Stored securely using Apple Keychain.</li>
+        <li><strong>Email:</strong> Recovery emails are stored only to send reset instructions.</li>
+      </ul>
+
+      <h2>Third-Party Services</h2>
+      <ul>
+        <li><strong>Postmark:</strong> Used solely to send recovery emails.</li>
+        <li><strong>Apple Services:</strong> Keychain; Face ID/Touch ID for authentication.</li>
+      </ul>
+      <p class="muted">We do not share your data with advertisers or sell your information.</p>
+
+      <h2>Your Choices & Rights</h2>
+      <ul>
+        <li>You can delete estimates and change credentials any time within the App.</li>
+        <li>To remove the Admin account and all local data, delete and reinstall the App.</li>
+      </ul>
+
+      <h2>Children’s Privacy</h2>
+      <p>
+        EstiMate is not intended for children under the age of 13. We do not knowingly collect information from children.
+      </p>
+
+      <h2>Changes to This Policy</h2>
+      <p>
+        We may update this policy from time to time. We will update the “Last Updated” date above when changes are made.
+      </p>
+
+      <h2>Contact Us</h2>
+      <p>
+        Questions about this Privacy Policy? Contact us at
+        <a href="mailto:support@estimateapp.app">support@estimateapp.app</a>.
+      </p>
+
+      <p class="footer">© <span id="y"></span> EstiMate</p>
+    </div>
+  </div>
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

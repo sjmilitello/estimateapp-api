@@ -1,29 +1,10 @@
 {
-  "headers": [
-    {
-      "source": "/.well-known/apple-app-site-association",
-      "headers": [
-        { "key": "Content-Type", "value": "application/json" },
-        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
-      ]
-    }
-  ]
-{
+  "version": 2,
   "cleanUrls": true,
-  "headers": [
-    {
-      "source": "/(privacy|terms|support)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=300" }
-      ]
-    }
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/privacy.html", "destination": "/privacy", "permanent": true },
+    { "source": "/terms.html", "destination": "/terms", "permanent": true },
+    { "source": "/support.html", "destination": "/support", "permanent": true }
   ]
-}
-{
-  "rewrites": [
-    { "source": "/privacy", "destination": "/privacy.html" },
-    { "source": "/terms",   "destination": "/terms.html" },
-    { "source": "/support", "destination": "/support.html" }
-    ]
-  }
 }

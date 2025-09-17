@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EstiMate App</title>
+  <meta name="description" content="EstiMate is a tile installation estimating app by Integrity Tile." />
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+           background:#f9fafb; color:#111; display:flex; align-items:center; justify-content:center;
+           min-height:100vh; text-align:center; }
+    .container { max-width:640px; padding:32px; }
+    h1 { font-size:clamp(32px,6vw,48px); margin:0 0 16px; color:#0b5fff; }
+    p { font-size:18px; margin:0 0 24px; color:#444; }
+    nav a { display:inline-block; margin:8px; padding:12px 20px; background:#0b5fff; color:#fff;
+            text-decoration:none; border-radius:8px; font-weight:500; }
+    nav a:hover { background:#004bcc; }
+    footer { margin-top:40px; font-size:14px; color:#777; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to EstiMate</h1>
+    <p>The fast and simple way to calculate tile installation costs.<br>
+       Built by Integrity Tile, LLC.</p>
+
+    <nav>
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/terms">Terms of Use</a>
+      <a href="/support">Support</a>
+    </nav>
+
+    <footer>
+      <p>© <span id="year"></span> Integrity Tile, LLC. All rights reserved.</p>
+    </footer>
+  </div>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

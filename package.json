@@ -1,5 +1,8 @@
 {
   "name": "estimateapp-api",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "postmark": "^3.11.0"
+  }
 }

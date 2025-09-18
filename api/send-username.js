@@ -1,35 +1,36 @@
-// /api/send-username.js
-import Postmark from "postmark";
+module.exports = async (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).json({ ok: false, error: "Method not allowed" });
+  }
 
-export default async function handler(req, res) {
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "Method not allowed" });
-    }
-
-    const client = new Postmark.ServerClient(process.env.POSTMARK_TOKEN || "");
-    const from = process.env.POSTMARK_FROM || "";
-    if (!process.env.POSTMARK_TOKEN || !from) {
-      return res.status(500).json({ ok: false, error: "Postmark env not set" });
-    }
-
-    const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
-    const { to, username } = body;
+    const { to, username } = req.body;
     if (!to || !username) {
-      return res.status(400).json({ ok: false, error: "Missing to or username" });
+      return res.status(400).json({ ok: false, error: "Missing to/username" });
     }
 
-    const result = await client.sendEmail({
-      From: from,
-      To: to,
-      Subject: "Your EstiMate admin username",
-      TextBody: `Your admin username is: ${username}`,
-      MessageStream: process.env.POSTMARK_STREAM || "outbound"
+    const resp = await fetch("https://api.postmarkapp.com/email", {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "X-Postmark-Server-Token": process.env.POSTMARK_API_TOKEN
+      },
+      body: JSON.stringify({
+        From: "noreply@estimateapp.app",   // must be a verified sender
+        To: to,
+        Subject: "Your EstiMate Username",
+        TextBody: `Your username is: ${username}`
+      })
     });
 
-    return res.status(200).json({ ok: true, pmStatus: 200, pmData: result });
+    const data = await resp.json();
+    if (!resp.ok) {
+      return res.status(resp.status).json({ ok: false, error: data.Message || "Postmark error" });
+    }
+
+    return res.status(200).json({ ok: true });
   } catch (err) {
-    const msg = err?.message || "Unknown error";
-    return res.status(500).json({ ok: false, error: msg });
+    return res.status(500).json({ ok: false, error: err.message });
   }
-}
+};

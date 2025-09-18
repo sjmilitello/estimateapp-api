@@ -1,67 +1,42 @@
-// /api/send-reset.js
-import crypto from "node:crypto";
-import Postmark from "postmark";
+module.exports = async (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).json({ ok: false, error: "Method not allowed" });
+  }
 
-function b64url(obj) {
-  return Buffer.from(JSON.stringify(obj)).toString("base64url");
-}
-function sign(data, secret) {
-  return crypto.createHmac("sha256", secret).update(data).digest("base64url");
-}
-function createToken(payload, secret, expiresInSeconds = 15 * 60) {
-  const headerB64 = b64url({ alg: "HS256", typ: "JWT" });
-  const exp = Math.floor(Date.now() / 1000) + expiresInSeconds;
-  const payloadB64 = b64url({ ...payload, exp });
-  const toSign = `${headerB64}.${payloadB64}`;
-  const sigB64 = sign(toSign, secret);
-  return `${toSign}.${sigB64}`;
-}
-
-export default async function handler(req, res) {
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "Method not allowed" });
-    }
-
-    const secret = process.env.APP_TOKEN_SECRET;
-    if (!secret) {
-      return res.status(500).json({ ok: false, error: "APP_TOKEN_SECRET not set" });
-    }
-    const client = new Postmark.ServerClient(process.env.POSTMARK_TOKEN || "");
-    const from = process.env.POSTMARK_FROM || "";
-    if (!process.env.POSTMARK_TOKEN || !from) {
-      return res.status(500).json({ ok: false, error: "Postmark env not set" });
-    }
-
-    const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
-    const { to } = body;
+    const { to } = req.body;
     if (!to) {
       return res.status(400).json({ ok: false, error: "Missing to" });
     }
 
-    // token contains nothing sensitive—just an expiry; password is set locally in app
-    const token = createToken({ purpose: "reset" }, secret, 15 * 60);
+    // Generate a random token
+    const token = Math.random().toString(36).substring(2, 15);
 
-    const base = process.env.APP_BASE_URL || `https://${req.headers.host}`;
-    const resetUrl = `${base}/api/reset-password?token=${encodeURIComponent(token)}`;
+    // Universal reset link
+    const resetUrl = `https://estimateapp.app/reset?token=${token}`;
 
-    const result = await client.sendEmail({
-      From: from,
-      To: to,
-      Subject: "Reset your EstiMate admin password",
-      TextBody:
-`Tap the link below to reset your admin password:
-
-${resetUrl}
-
-If you didn’t request this, ignore this email.
-This link expires in 15 minutes.`,
-      MessageStream: process.env.POSTMARK_STREAM || "outbound"
+    const resp = await fetch("https://api.postmarkapp.com/email", {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "X-Postmark-Server-Token": process.env.POSTMARK_API_TOKEN
+      },
+      body: JSON.stringify({
+        From: "noreply@estimateapp.app",   // must be a verified sender
+        To: to,
+        Subject: "Reset Your EstiMate Password",
+        TextBody: `Click the following link to reset your password:\n\n${resetUrl}`
+      })
     });
 
-    return res.status(200).json({ ok: true, token, resetUrl, pmData: result });
+    const data = await resp.json();
+    if (!resp.ok) {
+      return res.status(resp.status).json({ ok: false, error: data.Message || "Postmark error" });
+    }
+
+    return res.status(200).json({ ok: true, token, resetUrl });
   } catch (err) {
-    const msg = err?.message || "Unknown error";
-    return res.status(500).json({ ok: false, error: msg });
+    return res.status(500).json({ ok: false, error: err.message });
   }
-}
+};

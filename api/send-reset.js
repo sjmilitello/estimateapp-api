@@ -1,42 +1,28 @@
-module.exports = async (req, res) => {
+import { ServerClient } from "postmark";
+
+export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ ok: false, error: "Method not allowed" });
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const { to, resetUrl } = req.body;
+
+  if (!to || !resetUrl) {
+    return res.status(400).json({ error: "Missing fields" });
   }
 
   try {
-    const { to } = req.body;
-    if (!to) {
-      return res.status(400).json({ ok: false, error: "Missing to" });
-    }
+    const client = new ServerClient(process.env.POSTMARK_API_TOKEN);
 
-    // Generate a random token
-    const token = Math.random().toString(36).substring(2, 15);
-
-    // Universal reset link
-    const resetUrl = `https://estimateapp.app/reset?token=${token}`;
-
-    const resp = await fetch("https://api.postmarkapp.com/email", {
-      method: "POST",
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-        "X-Postmark-Server-Token": process.env.POSTMARK_API_TOKEN
-      },
-      body: JSON.stringify({
-        From: "noreply@estimateapp.app",   // must be a verified sender
-        To: to,
-        Subject: "Reset Your EstiMate Password",
-        TextBody: `Click the following link to reset your password:\n\n${resetUrl}`
-      })
+    await client.sendEmail({
+      From: process.env.FROM_EMAIL || "no-reply@estimateapp.app",
+      To: to,
+      Subject: "Password Reset Request",
+      TextBody: `Click this link to reset your password: ${resetUrl}`,
     });
 
-    const data = await resp.json();
-    if (!resp.ok) {
-      return res.status(resp.status).json({ ok: false, error: data.Message || "Postmark error" });
-    }
-
-    return res.status(200).json({ ok: true, token, resetUrl });
-  } catch (err) {
-    return res.status(500).json({ ok: false, error: err.message });
+    res.status(200).json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
   }
-};
+}

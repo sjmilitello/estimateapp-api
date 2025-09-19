@@ -1,28 +1,30 @@
-import { ServerClient } from "postmark";
+const { ServerClient } = require("postmark");
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  const { to, username } = req.body;
-
-  if (!to || !username) {
-    return res.status(400).json({ error: "Missing fields" });
+    return res.status(405).json({ ok: false, error: "Method not allowed" });
   }
 
   try {
+    const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
+    const { to, username } = body;
+
+    if (!to || !username) {
+      return res.status(400).json({ ok: false, error: "Missing to or username" });
+    }
+
     const client = new ServerClient(process.env.POSTMARK_API_TOKEN);
 
-    await client.sendEmail({
+    const result = await client.sendEmail({
       From: process.env.FROM_EMAIL || "no-reply@estimateapp.app",
       To: to,
-      Subject: "Your Username",
-      TextBody: `Your username is: ${username}`,
+      Subject: "Your EstiMate admin username",
+      TextBody: `Your admin username is: ${username}`,
+      MessageStream: process.env.POSTMARK_STREAM || "outbound"
     });
 
-    res.status(200).json({ ok: true });
-  } catch (error) {
-    res.status(500).json({ ok: false, error: error.message });
+    return res.status(200).json({ ok: true, pmStatus: result.ErrorCode });
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: err.message || "Unknown error" });
   }
-}
+};

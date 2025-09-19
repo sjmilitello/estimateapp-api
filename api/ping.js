@@ -1,10 +1,15 @@
-export default function handler(req, res) {
-  res.status(200).json({
+/**
+ * Simple diagnostics route to confirm env variables on the server.
+ * Returns which Postmark token is present and which one your code should use.
+ */
+module.exports = async (req, res) => {
+  const apiToken    = process.env.POSTMARK_API_TOKEN;
+  const serverToken = process.env.POSTMARK_SERVER_TOKEN;
+
+  return res.status(200).json({
     ok: true,
-    envSeen: {
-      POSTMARK_SERVER_TOKEN: !!process.env.POSTMARK_SERVER_TOKEN,
-      FROM_EMAIL: process.env.FROM_EMAIL || null,
-    },
-    nodeVersion: process.version,
+    has_API_TOKEN: !!apiToken,
+    has_SERVER_TOKEN: !!serverToken,
+    activeToken: apiToken ? "POSTMARK_API_TOKEN" : (serverToken ? "POSTMARK_SERVER_TOKEN (WRONG — update code)" : "none")
   });
-}
+};
